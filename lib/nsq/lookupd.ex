@@ -39,20 +39,20 @@ defmodule NSQ.Lookupd do
     lookupd_url = "http://#{host}:#{port}/lookup?topic=#{topic}"
     headers = [{"Accept", "application/vnd.nsq; version=1.0"}]
 
-    case HTTPotion.get(lookupd_url, headers: headers) do
-      %HTTPotion.Response{status_code: 200, body: body, headers: headers} ->
+    case Tesla.get(lookupd_url, headers: headers) do
+      {:ok, %Tesla.Env{status: 200, body: body, headers: headers}} ->
         normalize_200_response(headers, body)
 
-      %HTTPotion.Response{status_code: 404} ->
+      {:ok, %Tesla.Env{status: 404}} ->
         %{} |> normalize_response
 
-      %HTTPotion.Response{status_code: status, body: body} ->
+      {:ok, %Tesla.Env{status: status, body: body}} ->
         Logger.error("Unexpected status code from #{lookupd_url}: #{status}")
 
         %{status_code: status, data: body}
         |> normalize_response
 
-      %HTTPotion.ErrorResponse{} = error ->
+      {:ok, %Tesla.Env{}} = error ->
         Logger.error("Error connecting to #{lookupd_url}: #{inspect(error)}")
         normalize_response(%{})
     end
