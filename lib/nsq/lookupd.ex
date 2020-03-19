@@ -63,7 +63,7 @@ defmodule NSQ.Lookupd do
   defp normalize_200_response(headers, body) do
     body = if body == nil || body == "", do: "{}", else: body
 
-    if headers[:"X-Nsq-Content-Type"] == "nsq; version=1.0" do
+    if headers[:"x-nsq-content-type"] == "nsq; version=1.0" do
       Poison.decode!(body)
       |> normalize_response
     else
