@@ -41,6 +41,7 @@ defmodule NSQ.Lookupd do
 
     case Tesla.get(lookupd_url, headers: headers) do
       {:ok, %Tesla.Env{status: 200, body: body, headers: headers}} ->
+        Logger.debug("lookupd headers :#{inspect(headers)}, body: #{inspect(body)}")
         normalize_200_response(headers, body)
 
       {:ok, %Tesla.Env{status: 404}} ->
@@ -73,14 +74,18 @@ defmodule NSQ.Lookupd do
 
   @spec normalize_response(map) :: response
   defp normalize_response(m) do
-    Map.merge(
-      %{
-        status_code: nil,
-        status_txt: "",
-        data: "",
-        headers: []
-      },
-      m
-    )
+    result =
+      Map.merge(
+        %{
+          status_code: nil,
+          status_txt: "",
+          data: "",
+          headers: []
+        },
+        m
+      )
+
+    Logger.debug("normalize_response: #{inspect(result)}")
+    result
   end
 end
