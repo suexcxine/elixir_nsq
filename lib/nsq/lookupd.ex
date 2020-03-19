@@ -63,12 +63,16 @@ defmodule NSQ.Lookupd do
   defp normalize_200_response(headers, body) do
     body = if body == nil || body == "", do: "{}", else: body
 
-    if headers[:"x-nsq-content-type"] == "nsq; version=1.0" do
-      Poison.decode!(body)
-      |> normalize_response
-    else
-      %{status_code: 200, status_txt: "OK", data: body}
-      |> normalize_response
+    case List.keyfind(headers, "x-nsq-content-type", 0) do
+      {_, "nsq; version=1.0"} ->
+        Logger.debug("success\n\n")
+
+        Poison.decode!(body)
+        |> normalize_response
+
+      _ ->
+        %{status_code: 200, status_txt: "OK", data: body}
+        |> normalize_response
     end
   end
 
