@@ -41,7 +41,6 @@ defmodule NSQ.Lookupd do
 
     case Tesla.get(lookupd_url, headers: headers) do
       {:ok, %Tesla.Env{status: 200, body: body, headers: headers}} ->
-        Logger.debug("lookupd headers :#{inspect(headers)}, body: #{inspect(body)}")
         normalize_200_response(headers, body)
 
       {:ok, %Tesla.Env{status: 404}} ->
@@ -65,8 +64,6 @@ defmodule NSQ.Lookupd do
 
     case List.keyfind(headers, "x-nsq-content-type", 0) do
       {_, "nsq; version=1.0"} ->
-        Logger.debug("success\n\n")
-
         Poison.decode!(body)
         |> normalize_response
 
@@ -78,18 +75,14 @@ defmodule NSQ.Lookupd do
 
   @spec normalize_response(map) :: response
   defp normalize_response(m) do
-    result =
-      Map.merge(
-        %{
-          status_code: nil,
-          status_txt: "",
-          data: "",
-          headers: []
-        },
-        m
-      )
-
-    Logger.debug("normalize_response: #{inspect(result)}")
-    result
+    Map.merge(
+      %{
+        status_code: nil,
+        status_txt: "",
+        data: "",
+        headers: []
+      },
+      m
+    )
   end
 end
