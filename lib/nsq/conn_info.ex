@@ -107,8 +107,8 @@ defmodule NSQ.ConnInfo do
   end
 
   @doc false
-  def update(%{conn_info_pid: agent_pid, parent: parent, nsqd: nsqd}, func) do
-    update(agent_pid, conn_id(parent, nsqd), func)
+  def update(%{conn_info_pid: agent_pid, parent: parent, nsqd: nsqd}, map_or_func) do
+    update(agent_pid, conn_id(parent, nsqd), map_or_func)
   end
 
   @doc """

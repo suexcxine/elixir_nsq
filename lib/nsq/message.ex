@@ -95,7 +95,7 @@ defmodule NSQ.Message do
     Logger.debug("(#{inspect(message.connection)}) fin msg ID #{message.id}")
     message |> Buffer.send!(encode({:fin, message.id}))
     GenEvent.notify(message.event_manager_pid, {:message_finished, message})
-    GenServer.call(message.consumer, {:start_stop_continue_backoff, :resume})
+    GenServer.cast(message.consumer, {:start_stop_continue_backoff, :resume})
   end
 
   @doc """
@@ -145,9 +145,9 @@ defmodule NSQ.Message do
       end
 
     if backoff do
-      GenServer.call(message.consumer, {:start_stop_continue_backoff, :backoff})
+      GenServer.cast(message.consumer, {:start_stop_continue_backoff, :backoff})
     else
-      GenServer.call(message.consumer, {:start_stop_continue_backoff, :continue})
+      GenServer.cast(message.consumer, {:start_stop_continue_backoff, :continue})
     end
 
     message |> Buffer.send!(encode({:req, message.id, delay}))

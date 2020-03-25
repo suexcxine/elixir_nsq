@@ -206,15 +206,6 @@ defmodule NSQ.Consumer do
     {:reply, :ok, Connections.delete_dead!(cons_state)}
   end
 
-  @doc """
-  Called from `NSQ.Message.fin/1`. Not for external use.
-  """
-  @spec handle_call({:start_stop_continue_backoff, atom}, {reference, pid}, cons_state) ::
-          {:reply, :ok, cons_state}
-  def handle_call({:start_stop_continue_backoff, backoff_flag}, _from, cons_state) do
-    {:reply, :ok, Backoff.start_stop_continue!(self(), backoff_flag, cons_state)}
-  end
-
   @spec handle_call({:update_rdy, connection, integer}, {reference, pid}, cons_state) ::
           {:reply, :ok, cons_state}
   def handle_call({:update_rdy, conn, count}, _from, cons_state) do
@@ -278,6 +269,14 @@ defmodule NSQ.Consumer do
   @spec handle_cast(:resume, cons_state) :: {:noreply, cons_state}
   def handle_cast(:resume, state) do
     {:noreply, Backoff.resume!(self(), state)}
+  end
+
+  @doc """
+  Called from `NSQ.Message.fin/1`. Not for external use.
+  """
+  @spec handle_cast({:start_stop_continue_backoff, atom}, cons_state) :: {:noreply, cons_state}
+  def handle_cast({:start_stop_continue_backoff, backoff_flag}, cons_state) do
+    {:noreply, Backoff.start_stop_continue!(self(), backoff_flag, cons_state)}
   end
 
   @doc """
