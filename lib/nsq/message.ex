@@ -65,16 +65,18 @@ defmodule NSQ.Message do
   def process(message) do
     # Kick off processing in a separate process, so we can kill it if it takes
     # too long.
-    message = %{message | parent: self()}
 
-    {:ok, pid} =
-      Task.start_link(fn ->
-        process_without_timeout(message)
-      end)
+    # message = %{message | parent: self()}
+    ret_val = process_without_timeout(message)
 
-    message = %{message | processing_pid: pid}
+    # {:ok, pid} =
+    #   Task.start_link(fn ->
+    #     process_without_timeout(message)
+    #   end)
 
-    {:ok, ret_val} = wait_for_msg_done(message)
+    # message = %{message | processing_pid: pid}
+
+    # {:ok, ret_val} = wait_for_msg_done(message)
 
     # Even if we've killed the message processing, we're still "done"
     # processing it for now. That is, we should free up a spot on
@@ -176,7 +178,8 @@ defmodule NSQ.Message do
         run_handler_safely(message) |> respond_to_nsq(message)
       end
 
-    send(message.parent, {:message_done, message, ret_val})
+    ret_val
+    # send(message.parent, {:message_done, message, ret_val})
   end
 
   defp should_fail_message?(message) do
