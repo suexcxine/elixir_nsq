@@ -96,7 +96,7 @@ defmodule NSQ.Message do
   def fin(message) do
     Logger.debug("(#{inspect(message.connection)}) fin msg ID #{message.id}")
     message |> Buffer.send!(encode({:fin, message.id}))
-    GenEvent.notify(message.event_manager_pid, {:message_finished, message})
+    # GenEvent.notify(message.event_manager_pid, {:message_finished, message})
     GenServer.cast(message.consumer, {:start_stop_continue_backoff, :resume})
   end
 
