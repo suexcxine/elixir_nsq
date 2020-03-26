@@ -152,6 +152,23 @@ defmodule NSQ.Connection do
     {:noreply, conn_state}
   end
 
+  def handle_info({:tcp, sock, data}, state) do
+    Logger.info("elixir nsq received data, data: #{inspect(data)}")
+    decoded = NSQ.Protocol.decode(data)
+    {:ok, state} = MessageHandling.handle_nsq_message(decoded, state)
+    {:noreply, state}
+  end
+
+  def handle_info({:tcp_closed, _sock}, state) do
+    Logger.error("elixir nsq tcp_closed, state: #{inspect(state)}")
+    {:noreply, state}
+  end
+
+  def handle_info({:tcp_error, _sock, reason}, state) do
+    Logger.error("elixir nsq tcp_error, reason: #{inspect(reason)}")
+    {:noreply, state}
+  end
+
   # When a task is done, it automatically messages the return value to the
   # calling process. we can use that opportunity to update the messages in
   # flight.

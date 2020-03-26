@@ -24,6 +24,7 @@ defmodule NSQ.Connection.Initializer do
 
       case Socket.TCP.connect(host, port, socket_opts) do
         {:ok, socket} ->
+          Logger.info("we are using tcp connect")
           state.reader |> Buffer.setup_socket(socket, state.config.read_timeout)
           state.writer |> Buffer.setup_socket(socket, state.config.read_timeout)
 
@@ -32,6 +33,10 @@ defmodule NSQ.Connection.Initializer do
             |> do_handshake!
             |> start_receiving_messages!
             |> reset_connects
+
+          Logger.info(
+            "socket info: #{inspect(:erlang.port_info(socket))}, self: #{inspect(self())}"
+          )
 
           {:ok, %{state | connected: true}}
 
@@ -240,8 +245,9 @@ defmodule NSQ.Connection.Initializer do
 
   @spec start_receiving_messages(C.state()) :: {:ok, C.state()}
   defp start_receiving_messages(state) do
-    reader_pid = spawn_link(MessageHandling, :recv_nsq_messages, [state, self()])
-    state = %{state | reader_pid: reader_pid}
+    Socket.active(state.socket)
+    # reader_pid = spawn_link(MessageHandling, :recv_nsq_messages, [state, self()])
+    # state = %{state | reader_pid: reader_pid}
     GenServer.cast(self(), :flush_cmd_queue)
     {:ok, state}
   end
